@@ -169,7 +169,7 @@ button:focus-visible,
     0 0 1px rgb(0 0 0 / .3);
 }
 
-/* Luz redonda (LEDs e botão amarelo): defina --color com a cor da luz */
+/* Luz redonda (LEDs): defina --color com a cor da luz */
 .lamp {
   border-radius: 50%;
   border: 1px solid color-mix(in srgb, var(--color) 35%, #000);
@@ -661,8 +661,8 @@ button:focus-visible,
 .dark-pill-btn--left  { left: calc(var(--unit) * .43); }
 .dark-pill-btn--right { right: 0; }
 
-/* Botão redondo amarelo */
-.yellow-btn {
+/* LED redondo amarelo (também é botão: liga/desliga o shiny) */
+.yellow-led {
   left: calc(var(--unit) * .64);
   top: calc(var(--unit) * (.56 + 2 * var(--gap)));
   width: calc(var(--unit) * .08);
