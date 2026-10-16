@@ -1,3 +1,22 @@
+let keyboard = {
+    currentKey: '',
+    lastKey: '',
+    timerIsOn: false,
+    index: 0,
+    key1: [''],
+    key2: ['a', 'b', 'c'],
+    key3: ['d', 'e', 'f'],
+    key4: ['g', 'h', 'i'],
+    key5: ['j', 'k', 'l'],
+    key6: ['m', 'n', 'o'],
+    key7: ['p', 'q', 'r', 's'],
+    key8: ['t', 'u', 'v'],
+    key9: ['w', 'x', 'y', 'z'],
+    key0: ['-']
+}
+
+let timerId = 0;
+
 //SCREENS AND INDICATORS
 
 const mainScreen = document.querySelector('#main-screen'); //shows the pokémon sprite
@@ -24,11 +43,11 @@ const key6 = document.querySelector('#key-6'); //key for number 6 | m n o
 const key7 = document.querySelector('#key-7'); //key for number 7 | p q r
 const key8 = document.querySelector('#key-8'); //key for number 8 | s t u
 const key9 = document.querySelector('#key-9'); //key for number 9 | w x y z
-const key10 = document.querySelector('#key-10'); //key for number 0
+const key10 = document.querySelector('#key-10'); //key for number 0 | -
 const btnWhiteLeft = document.querySelector('#btn-white-left'); //search
 const btnWhiteRight = document.querySelector('#btn-white-right'); //delete
-const btnDarkLeft = document.querySelector('#btn-dark-left'); //toggles between letter and number mode
-const btnDarkRight = document.querySelector('#btn-dark-right'); //types a hyphen (-)
+const btnDarkLeft = document.querySelector('#btn-dark-left'); //toggles keyboard to letter mode
+const btnDarkRight = document.querySelector('#btn-dark-right'); //toggles keyboard to number mode
 const redButton = document.querySelector('#btn-red'); //shows the female version
 const blueButton = document.querySelector('#btn-blue'); //shows the male version
 const btnRound = document.querySelector('#btn-round'); //plays pokémon cry
@@ -40,10 +59,17 @@ const btnYellow = document.querySelector('#led-yellow'); //toggles between norma
 
 let pokedexState = {
     userTyping: false,
-    keyboardMode: false, //false for number | true for letter
+    keyboardMode: true, //false for number | true for letter
     validSearch: false
 };
 
+
+function resetTimer()
+{
+    clearTimeout(timerId);
+    clearInterval(timerId);
+    keyboard.timerIsOn = false;
+}
 
 function keyboardPressed(button)
 {
@@ -53,39 +79,27 @@ function keyboardPressed(button)
         infoScreen.textContent = '';
     }
     let buttonPressed = '';
-    switch(button)
+    if(pokedexState.keyboardMode)
     {
-        case '1':
-            buttonPressed = '1';
-            break;
-        case '2':
-            buttonPressed = '2';
-            break;
-        case '3':
-            buttonPressed = '3';
-            break;
-        case '4':
-            buttonPressed = '4';
-            break;
-        case '5':
-            buttonPressed = '5';
-            break;
-        case '6':
-            buttonPressed = '6';
-            break;
-        case '7':
-            buttonPressed = '7';
-            break;
-        case '8':
-            buttonPressed = '8';
-            break;
-        case '9':
-            buttonPressed = '9';
-            break;
-        case '10':
-            buttonPressed = '0';
-            break;
+        if (button === '1') return;
+        keyboard.currentKey = button;
+        if(keyboard.currentKey !== keyboard.lastKey) resetTimer();
+        if(keyboard.timerIsOn)
+        {
+            keyboard.index = (keyboard.index + 1) %  keyboard[`key${button}`].length;
+            infoScreen.textContent = infoScreen.textContent.slice(0, -1);
+        }
+        else 
+        {
+            keyboard.timerIsOn = true;
+            keyboard.index = 0;
+        }
+        clearTimeout(timerId);
+        timerId = setTimeout(resetTimer, 1000);
+        buttonPressed = keyboard[`key${button}`][keyboard.index];
+        keyboard.lastKey = keyboard.currentKey;
     }
+    else buttonPressed = button;
     infoScreen.textContent += buttonPressed;
 }
 
@@ -94,7 +108,7 @@ async function search()
     if(pokedexState.userTyping)
     {
         let endpoint = '';
-        if (!pokedexState.keyboardMode && Number.isFinite(infoScreen.textContent) && Number(infoScreen.textContent) <= 1025)
+        if (!pokedexState.keyboardMode && Number.isFinite(Number(infoScreen.textContent)))
         {
             endpoint = infoScreen.textContent;
             pokedexState.validSearch = true;
@@ -106,7 +120,14 @@ async function search()
         }
         if(pokedexState.validSearch)
         {
-            const promise = await fetch();
+            try
+            {
+                const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${endpoint}`);
+            }
+            catch(error)
+            {
+                alert(error.msg);
+            }
         }
     }
 }
@@ -133,6 +154,8 @@ key6.addEventListener('click', () => keyboardPressed('6'));
 key7.addEventListener('click', () => keyboardPressed('7'));
 key8.addEventListener('click', () => keyboardPressed('8'));
 key9.addEventListener('click', () => keyboardPressed('9'));
-key10.addEventListener('click', () => keyboardPressed('10'));
+key10.addEventListener('click', () => keyboardPressed('0'));
 btnWhiteLeft.addEventListener('click', search);
 btnWhiteRight.addEventListener('click', clear);
+btnDarkLeft.addEventListener('click', () => {if (!pokedexState.keyboardMode) pokedexState.keyboardMode = true; infoScreen.textContent = '';});
+btnDarkRight.addEventListener('click', () => {if (pokedexState.keyboardMode) pokedexState.keyboardMode = false; infoScreen.textContent = '';});
